@@ -99,7 +99,7 @@ namespace rectangle_manipulation
 
             DrawNotSoWetInkStrokes();
 
-            args.DrawingSession.DrawImage(RenderTarget);=
+            args.DrawingSession.DrawImage(RenderTarget);
 
             RenderBoundary();
         }
