@@ -146,41 +146,13 @@ namespace CustomControls.ResizableRectangle
                 Window.Current.CoreWindow.PointerCursor = new CoreCursor(CoreCursorType.Arrow, 0);
             };
 
-            boundary.ManipulationDelta += delegate (object sender, ManipulationDeltaRoutedEventArgs e)
-            {
-                boundaryTransform.TranslateX += e.Cumulative.Translation.X;
-                boundaryTransform.TranslateY += e.Cumulative.Translation.Y;
-            };
+            //boundary.ManipulationDelta += delegate (object sender, ManipulationDeltaRoutedEventArgs e)
+            //{
+            //    boundaryTransform.TranslateX += e.Cumulative.Translation.X;
+            //    boundaryTransform.TranslateY += e.Cumulative.Translation.Y;
+            //};
 
-            boundary.ManipulationCompleted += delegate (object sender, ManipulationCompletedRoutedEventArgs e)
-            {
-                (sender as Rectangle).ReleasePointerCaptures();
-                OriginalPointerPressedPosition = new Point();
-
-                // var transform = GetTemplateChild("BoundaryTransform") as CompositeTransform;
-
-                if (boundaryTransform == null)
-                    return;
-
-                CustomTransformMatrix = new Matrix
-                {
-                    M11 = boundaryTransform.ScaleX,
-                    M12 = 0,
-                    M21 = 0,
-                    M22 = boundaryTransform.ScaleY,
-                    OffsetX = boundaryTransform.TranslateX + 1,
-                    OffsetY = boundaryTransform.TranslateY + 1
-                };
-            };
-
-            boundary.PointerPressed += delegate (object sender, PointerRoutedEventArgs e)
-            {
-                OriginalPointerPressedPosition = e.GetCurrentPoint(this).Position;
-                (sender as Rectangle).CapturePointer(e.Pointer);
-                ActiveScaleHandle = ScaleHandlePosition.None;
-            };
-            //boundary.PointerMoved += delegate (object sender, PointerRoutedEventArgs e) { ProcessBoundaryMovement((sender as Rectangle), e); };
-            //boundary.PointerReleased += delegate (object sender, PointerRoutedEventArgs e)
+            //boundary.ManipulationCompleted += delegate (object sender, ManipulationCompletedRoutedEventArgs e)
             //{
             //    (sender as Rectangle).ReleasePointerCaptures();
             //    OriginalPointerPressedPosition = new Point();
@@ -200,6 +172,35 @@ namespace CustomControls.ResizableRectangle
             //        OffsetY = boundaryTransform.TranslateY + 1
             //    };
             //};
+
+            boundary.PointerPressed += delegate (object sender, PointerRoutedEventArgs e)
+            {
+                OriginalPointerPressedPosition = e.GetCurrentPoint(this).Position;
+                (sender as Rectangle).CapturePointer(e.Pointer);
+                ActiveScaleHandle = ScaleHandlePosition.None;
+            };
+            boundary.PointerMoved += delegate (object sender, PointerRoutedEventArgs e) { ProcessBoundaryMovement((sender as Rectangle), e); };
+            boundary.PointerReleased += delegate (object sender, PointerRoutedEventArgs e)
+            {
+                var handle = sender as Rectangle;
+                handle.ReleasePointerCaptures();
+                OriginalPointerPressedPosition = new Point();
+
+                // var transform = GetTemplateChild("BoundaryTransform") as CompositeTransform;
+
+                if (boundaryTransform == null)
+                    return;
+
+                CustomTransformMatrix = new Matrix
+                {
+                    M11 = boundaryTransform.ScaleX,
+                    M12 = 0,
+                    M21 = 0,
+                    M22 = boundaryTransform.ScaleY,
+                    OffsetX = boundaryTransform.TranslateX + 1 - handle.RenderTransformOrigin.X,
+                    OffsetY = boundaryTransform.TranslateY + 1 - handle.RenderTransformOrigin.Y
+                };
+            };
         }
 
         private void MoveScaleHandlesWithBoundary(double deltaX, double deltaY)
@@ -236,22 +237,23 @@ namespace CustomControls.ResizableRectangle
 
         private void InitScaleHandles()
         {
-            var topLeftHandle = GetTemplateChild("TopLeftHandle") as Ellipse;
-            topLeftHandle.RenderTransform = new TranslateTransform { X = Left - 4d, Y = Top - 4d };
+            //var topLeftHandle = GetTemplateChild("TopLeftHandle") as Ellipse;
+            //topLeftHandle.RenderTransform = new TranslateTransform { X = Left - 4d, Y = Top - 4d };
 
-            var topRightHandle = GetTemplateChild("TopRightHandle") as Ellipse;
-            topRightHandle.RenderTransform = new TranslateTransform { X = Right - 5d, Y = Top - 4d };
+            //var topRightHandle = GetTemplateChild("TopRightHandle") as Ellipse;
+            //topRightHandle.RenderTransform = new TranslateTransform { X = Right - 5d, Y = Top - 4d };
 
             var bottomRightHandle = GetTemplateChild("BottomRightHandle") as Ellipse;
+            bottomRightHandle.RenderTransformOrigin = new Point(Right, Bottom);
             bottomRightHandle.RenderTransform = new TranslateTransform { X = Right - 5d, Y = Bottom - 5d };
 
-            var bottomLeftHandle = GetTemplateChild("BottomLeftHandle") as Ellipse;
-            bottomLeftHandle.RenderTransform = new TranslateTransform { X = Left - 5d, Y = Bottom - 5d };
+            //var bottomLeftHandle = GetTemplateChild("BottomLeftHandle") as Ellipse;
+            //bottomLeftHandle.RenderTransform = new TranslateTransform { X = Left - 5d, Y = Bottom - 5d };
 
-            ScaleHandles.Add(ScaleHandlePosition.TopLeft, topLeftHandle);
-            ScaleHandles.Add(ScaleHandlePosition.TopRight, topRightHandle);
+            //ScaleHandles.Add(ScaleHandlePosition.TopLeft, topLeftHandle);
+            //ScaleHandles.Add(ScaleHandlePosition.TopRight, topRightHandle);
             ScaleHandles.Add(ScaleHandlePosition.BottomRight, bottomRightHandle);
-            ScaleHandles.Add(ScaleHandlePosition.BottomLeft, bottomLeftHandle);
+            //ScaleHandles.Add(ScaleHandlePosition.BottomLeft, bottomLeftHandle);
 
             foreach (var element in ScaleHandles)
             {
@@ -295,8 +297,8 @@ namespace CustomControls.ResizableRectangle
                 M12 = 0,
                 M21 = 0,
                 M22 = scaleY,
-                OffsetX = transform.TranslateX + 1,
-                OffsetY = transform.TranslateY + 1
+                OffsetX = transform.TranslateX + 1 - boundary.RenderTransformOrigin.X,
+                OffsetY = transform.TranslateY + 1 - boundary.RenderTransformOrigin.Y
             };
 
             OriginalBoundary = new Rectangle
@@ -332,69 +334,69 @@ namespace CustomControls.ResizableRectangle
             base.OnPointerPressed(e);
         }
 
-        //protected override void OnPointerMoved(PointerRoutedEventArgs e)
-        //{
-        //    var pointerPressed = e.GetCurrentPoint(this).Properties.IsLeftButtonPressed;
-        //    var boundary = GetTemplateChild("Boundary") as Rectangle;
-        //    var boundaryTransform = GetTemplateChild("BoundaryTransform") as CompositeTransform;
+        protected override void OnPointerMoved(PointerRoutedEventArgs e)
+        {
+            var pointerPressed = e.GetCurrentPoint(this).Properties.IsLeftButtonPressed;
+            var boundary = GetTemplateChild("Boundary") as Rectangle;
+            var boundaryTransform = GetTemplateChild("BoundaryTransform") as CompositeTransform;
 
-        //    if (pointerPressed && ActiveScaleHandle != ScaleHandlePosition.None)
-        //    {
-        //        if (OriginalPointerPressedPosition == new Point())
-        //            OriginalPointerPressedPosition = e.GetCurrentPoint(this).Position;
+            if (pointerPressed && ActiveScaleHandle != ScaleHandlePosition.None)
+            {
+                if (OriginalPointerPressedPosition == new Point())
+                    OriginalPointerPressedPosition = e.GetCurrentPoint(this).Position;
 
-        //        var currentPointerPosition = e.GetCurrentPoint(this).Position;
-        //        var deltaX = currentPointerPosition.X - OriginalPointerPressedPosition.X;
-        //        var deltaY = currentPointerPosition.Y - OriginalPointerPressedPosition.Y;
+                var currentPointerPosition = e.GetCurrentPoint(this).Position;
+                var deltaX = currentPointerPosition.X - OriginalPointerPressedPosition.X;
+                var deltaY = currentPointerPosition.Y - OriginalPointerPressedPosition.Y;
 
-        //        var handle = ScaleHandles[ActiveScaleHandle] as Ellipse;
-        //        (handle.RenderTransform as TranslateTransform).X += deltaX;
-        //        (handle.RenderTransform as TranslateTransform).Y += deltaY;
+                var handle = ScaleHandles[ActiveScaleHandle] as Ellipse;
+                (handle.RenderTransform as TranslateTransform).X += deltaX;
+                (handle.RenderTransform as TranslateTransform).Y += deltaY;
 
-        //        switch (ActiveScaleHandle)
-        //        {
-        //            case ScaleHandlePosition.TopLeft:
-        //                boundaryTransform.TranslateX += deltaX;
-        //                boundaryTransform.TranslateY += deltaY;
+                switch (ActiveScaleHandle)
+                {
+                    case ScaleHandlePosition.TopLeft:
+                        boundaryTransform.TranslateX += deltaX;
+                        boundaryTransform.TranslateY += deltaY;
 
-        //                (ScaleHandles[ScaleHandlePosition.TopRight].RenderTransform as TranslateTransform).Y += deltaY;
-        //                (ScaleHandles[ScaleHandlePosition.BottomLeft].RenderTransform as TranslateTransform).X += deltaX;
+                        (ScaleHandles[ScaleHandlePosition.TopRight].RenderTransform as TranslateTransform).Y += deltaY;
+                        (ScaleHandles[ScaleHandlePosition.BottomLeft].RenderTransform as TranslateTransform).X += deltaX;
 
-        //                boundary.Width += deltaX > 0 ? -deltaX : Math.Abs(deltaX);
-        //                boundary.Height += deltaY > 0 ? -deltaY : Math.Abs(deltaY);
-        //                break;
-        //            case ScaleHandlePosition.TopRight:
-        //                boundaryTransform.TranslateY += deltaY;
+                        boundary.Width += deltaX > 0 ? -deltaX : Math.Abs(deltaX);
+                        boundary.Height += deltaY > 0 ? -deltaY : Math.Abs(deltaY);
+                        break;
+                    case ScaleHandlePosition.TopRight:
+                        boundaryTransform.TranslateY += deltaY;
 
-        //                (ScaleHandles[ScaleHandlePosition.TopLeft].RenderTransform as TranslateTransform).Y += deltaY;
-        //                (ScaleHandles[ScaleHandlePosition.BottomRight].RenderTransform as TranslateTransform).X += deltaX;
+                        (ScaleHandles[ScaleHandlePosition.TopLeft].RenderTransform as TranslateTransform).Y += deltaY;
+                        (ScaleHandles[ScaleHandlePosition.BottomRight].RenderTransform as TranslateTransform).X += deltaX;
 
-        //                boundary.Width += deltaX;
-        //                boundary.Height += deltaY > 0 ? -deltaY : Math.Abs(deltaY);
-        //                break;
-        //            case ScaleHandlePosition.BottomLeft:
-        //                boundaryTransform.TranslateX += deltaX;
+                        boundary.Width += deltaX;
+                        boundary.Height += deltaY > 0 ? -deltaY : Math.Abs(deltaY);
+                        break;
+                    case ScaleHandlePosition.BottomLeft:
+                        boundaryTransform.TranslateX += deltaX;
 
-        //                (ScaleHandles[ScaleHandlePosition.TopLeft].RenderTransform as TranslateTransform).X += deltaX;
-        //                (ScaleHandles[ScaleHandlePosition.BottomRight].RenderTransform as TranslateTransform).Y += deltaY;
+                        (ScaleHandles[ScaleHandlePosition.TopLeft].RenderTransform as TranslateTransform).X += deltaX;
+                        (ScaleHandles[ScaleHandlePosition.BottomRight].RenderTransform as TranslateTransform).Y += deltaY;
 
-        //                boundary.Width += deltaX > 0 ? -deltaX : Math.Abs(deltaX);
-        //                boundary.Height += deltaY;
-        //                break;
-        //            case ScaleHandlePosition.BottomRight:
-        //                (ScaleHandles[ScaleHandlePosition.TopRight].RenderTransform as TranslateTransform).X += deltaX;
-        //                (ScaleHandles[ScaleHandlePosition.BottomLeft].RenderTransform as TranslateTransform).Y += deltaY;
+                        boundary.Width += deltaX > 0 ? -deltaX : Math.Abs(deltaX);
+                        boundary.Height += deltaY;
+                        break;
+                    case ScaleHandlePosition.BottomRight:
+                        //(ScaleHandles[ScaleHandlePosition.TopRight].RenderTransform as TranslateTransform).X += deltaX;
+                        //(ScaleHandles[ScaleHandlePosition.BottomLeft].RenderTransform as TranslateTransform).Y += deltaY;
 
-        //                boundary.Width += deltaX;
-        //                boundary.Height += deltaY;
-        //                break;
-        //        }
+                        boundary.Width += deltaX;
+                        boundary.Height += deltaY;
+                        break;
+                }
 
-        //        OriginalPointerPressedPosition = currentPointerPosition;
-        //    }
+                OriginalPointerPressedPosition = currentPointerPosition;
+            }
 
-        //    base.OnPointerMoved(e);
-        //}
+            base.OnPointerMoved(e);
+        }
 
         protected override void OnPointerReleased(PointerRoutedEventArgs e)
         {

@@ -4,10 +4,22 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:rectangle_manipulation"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controls="using:rectangle_manipulation.Controls"
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Canvas x:Name="RootCanvas">
-    </Canvas>
+    <StackPanel Orientation="Vertical">
+        <StackPanel Orientation="Horizontal">
+            <Button Click="CanAddSoWetStrokesToNotSoWetStrokes" Content="Save Ink"/>
+            <Button Click="OnClearInkClicked" Content="Clear Ink"/>
+        </StackPanel>
+        <ScrollViewer x:Name="ScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Auto" VerticalScrollMode="Auto" ZoomMode="Enabled" ViewChanged="OnScrollViewerViewChanged">
+            <Grid x:Name="Viewport" VerticalAlignment="Top">
+                <Border Background="White" Width="617" Height="792"/>
+                <Canvas x:Name="RootCanvas" Width="617" Height="792" Background="Transparent">
+                    <!--<controls:ResizableRectangle x:Name="Boundary"/>-->
+                </Canvas>
+            </Grid>
+        </ScrollViewer>
+    </StackPanel>
 </Page>

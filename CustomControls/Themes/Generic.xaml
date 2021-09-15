@@ -221,7 +221,8 @@
                                    Width="{TemplateBinding Width}"
                                    Height="{TemplateBinding Height}"
                                    ManipulationMode="TranslateX,TranslateY"
-                                   CompositeMode="SourceOver">
+                                   CompositeMode="SourceOver"
+                                   RenderTransformOrigin="{TemplateBinding RenderTransformOrigin}">
                             <Rectangle.RenderTransform>
                                 <CompositeTransform x:Name="BoundaryTransform"/>
                             </Rectangle.RenderTransform>
